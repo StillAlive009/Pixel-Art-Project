@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Image Pixelator</title>
+    <!-- Load the Pixel It library from a free CDN -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background: #222; color: #fff; text-align: center; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #333; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        input[type="file"], input[type="range"] { margin: 15px 0; width: 100%; }
+        .controls { margin-top: 15px; text-align: left; }
+        canvas { max-width: 100%; margin-top: 20px; border: 2px dashed #555; background: #111; }
+        #sourceImg { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pixel Image Converter</h1>
+    <p>Upload an image to turn it into pixel art instantly!</p>
+    
+    <input type="file" id="upload" accept="image/*">
+    
+    <div class="controls">
+        <label for="pixelScale">Pixel Block Size: <span id="scaleVal">10</span></label>
+        <input type="range" id="pixelScale" min="2" max="50" value="10">
+    </div>
+
+    <!-- Hidden image tag to hold the original upload -->
+    <img id="sourceImg" src="" alt="Source">
+    
+    <!-- This canvas elements displays the converted pixel art -->
+    <canvas id="pixelCanvas"></canvas>
+</div>
+
+<script>
+    const upload = document.getElementById('upload');
+    const sourceImg = document.getElementById('sourceImg');
+    const canvas = document.getElementById('pixelCanvas');
+    const scaleSlider = document.getElementById('pixelScale');
+    const scaleVal = document.getElementById('scaleVal');
+
+    // Function to run the conversion software
+    function convertToPixel() {
+        if (!sourceImg.src || sourceImg.src === window.location.href) return;
+        
+        const scale = parseInt(scaleSlider.value);
+        scaleVal.innerText = scale;
+
+        // Initialize the library configurations
+        const px = new pixelit({
+            from: sourceImg,
+            to: canvas,
+            scale: scale
+        });
+        
+        px.draw().pixelate(); // Run the conversion engine
+    }
+
+    // Handle user image upload
+    upload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                sourceImg.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Re-run conversion when the image finishes loading or slider moves
+    sourceImg.onload = convertToPixel;
+    scaleSlider.addEventListener('input', convertToPixel);
+</script>
+
+</body>
+</html>
