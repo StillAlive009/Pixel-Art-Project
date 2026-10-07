@@ -1,60 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>96x96 Pixel Art Converter</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background: #222; color: #fff; text-align: center; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #333; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        input[type="file"] { margin: 20px 0; }
+        .btn { display: none; background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 15px; text-decoration: none; font-weight: bold; }
+        .btn:hover { background: #0056b3; }
+        .canvas-container { margin: 20px auto; display: flex; justify-content: center; }
+        
+        /* VISUAL FIX: Forces the image viewer elements on screen to be EXACTLY 96x96 pixels */
+        canvas { 
+            border: 2px dashed #555; 
+            background: #111; 
+            width: 96px !important; 
+            height: 96px !important; 
+            image-rendering: pixelated; 
+            image-rendering: crisp-edges; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>96x96 Pixel Converter</h1>
+    <p>Upload an image to convert it into a crisp 96x96 pixel art sprite.</p>
+    
+    <input type="file" id="upload" accept="image/*">
+    
+    <div class="canvas-container">
+        <canvas id="pixelCanvas"></canvas>
+    </div>
+    
+    <div>
+        <a id="downloadBtn" class="btn">Export Pixel Art</a>
+    </div>
+</div>
+
 <script>
     const upload = document.getElementById('upload');
     const canvas = document.getElementById('pixelCanvas');
     const ctx = canvas.getContext('2d');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    // Force the physical resolution grid to exactly 96x96 pixels permanently
+    // DATA FIX: Locks the internal data grid processing boundaries to 96x96 pixels
     canvas.width = 96;
     canvas.height = 96;
 
-    // Scale display size visually (384x384 area) so you can easily see the pixels
-    canvas.style.width = '384px';
-    canvas.style.height = '384px';
-
     upload.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+        const file = e.target.files;
+        if (!file || !file[0]) return;
 
         const reader = new FileReader();
         reader.onload = function(event) {
             const img = new Image();
             img.onload = function() {
-                // Clear any previous drawings out of the fixed grid
                 ctx.clearRect(0, 0, 96, 96);
 
-                // Disable anti-aliasing to preserve clean, crisp pixel block edges
+                // Prevent the browser from blurring the pixels
                 ctx.imageSmoothingEnabled = false;
                 ctx.mozImageSmoothingEnabled = false;
                 ctx.webkitImageSmoothingEnabled = false;
                 ctx.msImageSmoothingEnabled = false;
 
-                // Calculate center-cropping parameters so the image conforms to the square grid
+                // Center crop math to conform the image to a perfect square grid
                 let sourceX = 0;
                 let sourceY = 0;
                 let sourceSize = Math.min(img.width, img.height);
 
-                // Find the center point coordinates of the uploaded image
                 if (img.width > img.height) {
                     sourceX = Math.round((img.width - img.height) / 2);
                 } else {
                     sourceY = Math.round((img.height - img.width) / 2);
                 }
 
-                // Slice a perfect square out of the image center and scale it down to the 96x96 canvas grid
+                // Render image data into the strict 96x96 matrix framework
                 ctx.drawImage(
                     img, 
-                    sourceX, sourceY, sourceSize, sourceSize, // Source square
-                    0, 0, 96, 96                              // Destination square
+                    sourceX, sourceY, sourceSize, sourceSize,
+                    0, 0, 96, 96
                 );
 
-                // Setup export pipeline download logic
+                // Prepare file pipeline links for a clean 96x96 PNG export asset
                 downloadBtn.href = canvas.toDataURL('image/png');
                 downloadBtn.download = 'pixel-art-96x96.png';
                 downloadBtn.style.display = 'inline-block';
             }
             img.src = event.target.result;
         }
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(file[0]);
     });
 </script>
+
+</body>
+</html>
