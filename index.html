@@ -1,47 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>96x96 Pixel Art Converter</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background: #222; color: #fff; text-align: center; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #333; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        input[type="file"] { margin: 15px 0; }
+        .btn { display: inline-block; background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 15px; text-decoration: none; font-weight: bold; }
+        .btn:hover { background: #0056b3; }
+        .canvas-container { margin-top: 20px; display: flex; justify-content: center; }
+        canvas { border: 2px dashed #555; background: #111; max-width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; }
+        #downloadBtn { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>96x96 Pixel Converter</h1>
+    <p>Upload an image to convert it into a crisp 96x96 pixel art sprite.</p>
+    
+    <input type="file" id="upload" accept="image/*">
+    
+    <div class="canvas-container">
+        <!-- The visual asset renders directly here -->
+        <canvas id="pixelCanvas"></canvas>
+    </div>
+    
+    <div>
+        <a id="downloadBtn" class="btn">Export Pixel Art</a>
+    </div>
+</div>
+
 <script>
     const upload = document.getElementById('upload');
-    const sourceImg = document.getElementById('sourceImg');
     const canvas = document.getElementById('pixelCanvas');
-    const scaleSlider = document.getElementById('pixelScale');
-    const scaleVal = document.getElementById('scaleVal');
+    const ctx = canvas.getContext('2d');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-    // Function to run the conversion software
-    function convertToPixel() {
-        // Ensure the source image has an actual image loaded
-        if (!sourceImg.complete || sourceImg.naturalWidth === 0) return;
-        
-        const scale = parseInt(scaleSlider.value);
-        scaleVal.innerText = scale;
-
-        // Initialize the library configurations
-        const px = new pixelit({
-            from: sourceImg,
-            to: canvas,
-            scale: scale
-        });
-        
-        px.draw().pixelate(); // Run the conversion engine
-    }
-
-    // Handle user image upload safely
     upload.addEventListener('change', function(e) {
-        const file = e.target.files[0]; // Get the single uploaded file
-        if (file) {
-            const reader = new FileReader();
-            
-            // Wait until the file reader finishes reading the data
-            reader.onload = function(event) {
-                sourceImg.src = event.target.result;
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                // Determine dimensions while conforming to the original aspect ratio edge parameters
+                let targetWidth = 96;
+                let targetHeight = 96;
+                
+                if (img.width > img.height) {
+                    targetHeight = Math.round((img.height / img.width) * 96);
+                } else {
+                    targetWidth = Math.round((img.width / img.height) * 96);
+                }
+
+                // Force the physical size of the workspace canvas matrix
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+
+                // Scale display dimensions smoothly on modern screens
+                canvas.style.width = (targetWidth * 4) + 'px';
+                canvas.style.height = (targetHeight * 4) + 'px';
+
+                // Disable anti-aliasing to preserve clean color block edges
+                ctx.imageSmoothingEnabled = false;
+                ctx.mozImageSmoothingEnabled = false;
+                ctx.webkitImageSmoothingEnabled = false;
+                ctx.msImageSmoothingEnabled = false;
+
+                // Downsample image down into the target resolution bounds
+                ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+                // Setup the programmatic export download anchor pipeline
+                downloadBtn.href = canvas.toDataURL('image/png');
+                downloadBtn.download = 'pixel-art-96x96.png';
+                downloadBtn.style.display = 'inline-block';
             }
-            reader.readAsDataURL(file);
+            img.src = event.target.result;
         }
+        reader.readAsDataURL(file);
     });
-
-    // CRITICAL FIX: Explicitly listen for when the image finishes loading its data source
-    sourceImg.addEventListener('load', function() {
-        convertToPixel();
-    });
-
-    // Re-run conversion when the slider moves
-    scaleSlider.addEventListener('input', convertToPixel);
 </script>
+
+</body>
+</html>
