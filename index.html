@@ -7,12 +7,11 @@
     <style>
         body { font-family: 'Courier New', Courier, monospace; background: #222; color: #fff; text-align: center; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: #333; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        input[type="file"] { margin: 15px 0; }
-        .btn { display: inline-block; background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 15px; text-decoration: none; font-weight: bold; }
+        input[type="file"] { margin: 20px 0; }
+        .btn { display: none; background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 15px; text-decoration: none; font-weight: bold; }
         .btn:hover { background: #0056b3; }
-        .canvas-container { margin-top: 20px; display: flex; justify-content: center; }
+        .canvas-container { margin: 20px auto; display: flex; justify-content: center; }
         canvas { border: 2px dashed #555; background: #111; max-width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; }
-        #downloadBtn { display: none; }
     </style>
 </head>
 <body>
@@ -24,7 +23,6 @@
     <input type="file" id="upload" accept="image/*">
     
     <div class="canvas-container">
-        <!-- The visual asset renders directly here -->
         <canvas id="pixelCanvas"></canvas>
     </div>
     
@@ -47,34 +45,35 @@
         reader.onload = function(event) {
             const img = new Image();
             img.onload = function() {
-                // Determine dimensions while conforming to the original aspect ratio edge parameters
+                // Initialize default grid boundaries
                 let targetWidth = 96;
                 let targetHeight = 96;
                 
+                // Conforms width and height ratios dynamically to the original image's shape
                 if (img.width > img.height) {
                     targetHeight = Math.round((img.height / img.width) * 96);
                 } else {
                     targetWidth = Math.round((img.width / img.height) * 96);
                 }
 
-                // Force the physical size of the workspace canvas matrix
+                // Force pixel resolution canvas map size
                 canvas.width = targetWidth;
                 canvas.height = targetHeight;
 
-                // Scale display dimensions smoothly on modern screens
+                // Scale display container scale up visually so the user can easily see it on large monitors
                 canvas.style.width = (targetWidth * 4) + 'px';
                 canvas.style.height = (targetHeight * 4) + 'px';
 
-                // Disable anti-aliasing to preserve clean color block edges
+                // Disable anti-aliasing to preserve sharp pixel block edges
                 ctx.imageSmoothingEnabled = false;
                 ctx.mozImageSmoothingEnabled = false;
                 ctx.webkitImageSmoothingEnabled = false;
                 ctx.msImageSmoothingEnabled = false;
 
-                // Downsample image down into the target resolution bounds
+                // Drop pixels down completely to downsampled resolution grid parameters
                 ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-                // Setup the programmatic export download anchor pipeline
+                // Setup raw image target pipeline export data source links
                 downloadBtn.href = canvas.toDataURL('image/png');
                 downloadBtn.download = 'pixel-art-96x96.png';
                 downloadBtn.style.display = 'inline-block';
