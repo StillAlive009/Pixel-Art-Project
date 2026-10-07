@@ -10,14 +10,22 @@
         input[type="file"] { margin: 20px 0; }
         .btn { display: none; background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 15px; text-decoration: none; font-weight: bold; }
         .btn:hover { background: #0056b3; }
-        .canvas-container { margin: 20px auto; display: flex; justify-content: center; }
         
-        /* VISUAL FIX: Forces the image viewer elements on screen to be EXACTLY 96x96 pixels */
+        /* FIXED VISUAL VIEWER: Constrains the container and forces a 96x96 square aspect ratio */
+        .canvas-container { 
+            margin: 20px auto; 
+            display: flex; 
+            justify-content: center; 
+            width: 96px !important; 
+            height: 96px !important;
+        }
+        
         canvas { 
             border: 2px dashed #555; 
             background: #111; 
             width: 96px !important; 
             height: 96px !important; 
+            display: block;
             image-rendering: pixelated; 
             image-rendering: crisp-edges; 
         }
@@ -46,13 +54,13 @@
     const ctx = canvas.getContext('2d');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    // DATA FIX: Locks the internal data grid processing boundaries to 96x96 pixels
+    // DATA MATRIX FIX: Locks the internal data rendering grids to 96x96 pixels
     canvas.width = 96;
     canvas.height = 96;
 
     upload.addEventListener('change', function(e) {
-        const file = e.target.files;
-        if (!file || !file[0]) return;
+        const file = e.target.files[0];
+        if (!file) return;
 
         const reader = new FileReader();
         reader.onload = function(event) {
@@ -60,13 +68,13 @@
             img.onload = function() {
                 ctx.clearRect(0, 0, 96, 96);
 
-                // Prevent the browser from blurring the pixels
+                // Prevent the browser from applying anti-alias blurring filters
                 ctx.imageSmoothingEnabled = false;
                 ctx.mozImageSmoothingEnabled = false;
                 ctx.webkitImageSmoothingEnabled = false;
                 ctx.msImageSmoothingEnabled = false;
 
-                // Center crop math to conform the image to a perfect square grid
+                // Center-cropping formula to fit any rectangular upload into the square grid template
                 let sourceX = 0;
                 let sourceY = 0;
                 let sourceSize = Math.min(img.width, img.height);
@@ -77,21 +85,21 @@
                     sourceY = Math.round((img.height - img.width) / 2);
                 }
 
-                // Render image data into the strict 96x96 matrix framework
+                // Compress image content down strictly to the 96x96 raster frame bounds
                 ctx.drawImage(
                     img, 
                     sourceX, sourceY, sourceSize, sourceSize,
                     0, 0, 96, 96
                 );
 
-                // Prepare file pipeline links for a clean 96x96 PNG export asset
+                // Format export data download structures
                 downloadBtn.href = canvas.toDataURL('image/png');
                 downloadBtn.download = 'pixel-art-96x96.png';
                 downloadBtn.style.display = 'inline-block';
             }
             img.src = event.target.result;
         }
-        reader.readAsDataURL(file[0]);
+        reader.readAsDataURL(file);
     });
 </script>
 
